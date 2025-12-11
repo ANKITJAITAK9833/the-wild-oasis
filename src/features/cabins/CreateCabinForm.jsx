@@ -1,5 +1,3 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {toast} from "react-hot-toast";
 
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
@@ -7,51 +5,29 @@ import Button from "../../ui/Button";
 import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
 import { useForm } from "react-hook-form";
-import { createEditCabin } from "../../services/apiCabins";
 import FormRow from "../../ui/FormRow";
+import { useCreateCabin } from "./useCreateCabin";
+import { useEditCabin } from "./useEditCabin";
 
 function CreateCabinForm({cabinToEdit = {}, closeForm}) {
   console.log(closeForm);
   const {id: editId, ...editValues} = cabinToEdit;
   const isEditSession = Boolean(editId);
-  const clientQuery = useQueryClient();
   const {register, handleSubmit, reset, getValues, formState} = useForm({
     defaultValues: isEditSession ? editValues : {}
   });
   const {errors} = formState;
-  const {mutate: createCabin, isPending: isCreating} = useMutation({
-    mutationFn: (data) => createEditCabin(data),
-    onSuccess: () => {
-      toast.success("Cabin created successfully"); 
-      clientQuery.invalidateQueries({ queryKey: ['cabins'] });
-      reset();
-    },
-    onError: (error) => {
-      toast.error("Error creating cabin: " + error.message);
-    }
-  });
+ const {createCabin, isCreating} = useCreateCabin();
 
-  const {mutate: editCabin, isPending:isEditing} = useMutation({
-    // In mutationFn, we destructure data and id from the object passed to mutate
-    // We have to pass it in an object because mutate only accepts a single argument
-    mutationFn: ({data,id}) => createEditCabin(data, id),
-    onSuccess: () => {
-      toast.success("Cabin edited successfully"); 
-      clientQuery.invalidateQueries({ queryKey: ['cabins'] });
-      reset();
-    },
-    onError: (error) => {
-      toast.error("Error editing a cabin: " + error.message);
-    }
-  });
+const {editCabin, isEditing} = useEditCabin();
 const isWorking = isCreating || isEditing;
 function onSubmit(data){
   console.log(data, isEditSession);
   const image = data.image && typeof data.image === 'object' ?  data.image[0] : data.image ;
    if(isEditSession){
-    editCabin({data: {...data, image: image}, id: editId});
+    editCabin({data: {...data, image: image}, id: editId},{ onSuccess: () => reset()});
    }else {
-     createCabin({...data, image: image});
+     createCabin({...data, image: image},{ onSuccess: () => reset()});
    }
    closeForm();
 }
@@ -68,35 +44,35 @@ function onError(errors){
         })}/>
       </FormRow>
 
-      <FormRow label="Maximum capacity" disabled={isWorking} error={errors?.maxCapacity?.message}>
-        <Input type="number" id="maxCapacity" {...register("maxCapacity", {
+      <FormRow label="Maximum capacity"  error={errors?.maxCapacity?.message}>
+        <Input type="number" id="maxCapacity" disabled={isWorking}{...register("maxCapacity", {
           required: "This filed is required",
           min: {value:1, message:"Capacity must be at least 1"}
         })}/>
       </FormRow>
 
-      <FormRow label="Regular price"  disabled={isWorking} error={errors?.regularPrice?.message}>
-        <Input type="number" id="regularPrice" {...register("regularPrice", {
+      <FormRow label="Regular price"  error={errors?.regularPrice?.message}>
+        <Input type="number" id="regularPrice"  disabled={isWorking} {...register("regularPrice", {
           required: "This filed is required",
           min: {value:0, message:"Price must be at least 0"}
         })}/>
       </FormRow>
 
-      <FormRow label="Discount" disabled={isWorking} error={errors?.discount?.message}>
-        <Input type="number" id="discount" defaultValue={0} {...register("discount", {
+      <FormRow label="Discount" error={errors?.discount?.message}>
+        <Input type="number" id="discount" defaultValue={0} disabled={isWorking}  {...register("discount", {
           required: "This filed is required",
-          validate: (value) => value <= getValues().regularPrice|| "Discount must less than regular price"
+          validate: (value) => value <= getValues()?.regularPrice|| "Discount must less than regular price"
         })} />
       </FormRow>
 
-      <FormRow label="Description" disabled={isWorking} error={errors?.description?.message}>
-        <Textarea type="number" id="description" defaultValue="" {...register("description", {
+      <FormRow label="Description" error={errors?.description?.message}>
+        <Textarea type="number" disabled={isWorking}  id="description" defaultValue="" {...register("description", {
           required: "This filed is required"
         })}/>
       </FormRow>
 
-      <FormRow label="Cabin photo" disabled={isWorking} error={errors?.image?.message}>
-        <FileInput id="image" accept="image/*" {...register("image", {
+      <FormRow label="Cabin photo" error={errors?.image?.message}>
+        <FileInput id="image" accept="image/*" disabled={isWorking}  {...register("image", {
           required: isEditSession ? false : "This filed is required"
         })} />
       </FormRow>

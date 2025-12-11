@@ -42,6 +42,9 @@ const { data, error } = await query.select().single();
     console.error("Error creating cabin:", error);
     throw new Error("Could not create cabin", error);
   }
+  if(hasImagePath) return data;
+
+  // 2. Upload image to storage if there's a new image
   const { error: storageError } = await supabase
     .storage
     .from('cabin-images')
