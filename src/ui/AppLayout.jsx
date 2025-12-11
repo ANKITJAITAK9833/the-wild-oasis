@@ -10,22 +10,31 @@ const StyledAppLayout = styled.div`
 `;
 
 const Main = styled.main`
-   
+    overflow: scroll;
     background-color: var(--color-grey-50);
     padding: 4rem 4.8rem 6.4rem;
 `;
 
-function AppLayout(){
-return (
-  <StyledAppLayout>
-    <Header/>
-    <Sidebar/>
-    <Main>
+const Container = styled.div`
+    max-width: 120rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.2rem;
+`;
+function AppLayout() {
+  return (
+    <StyledAppLayout>
+      <Header />
+      <Sidebar />
+      <Main>
+        <Container>
 
-    <Outlet/>
-    </Main>
-  </StyledAppLayout>
-)
+          <Outlet />
+        </Container>
+      </Main>
+    </StyledAppLayout>
+  )
 }
 
 export default AppLayout;
