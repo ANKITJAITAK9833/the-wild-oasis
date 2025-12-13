@@ -26,7 +26,6 @@ const TableHeader = styled.header`
   color: var(--color-grey-600);
   padding: 1.6rem 2.4rem;
 `;
-console.log(TableHeader,Table);
 function CabinTable() {
   const {isLoading, data:cabins, error} = useQuery({
     queryKey: ['cabins'],
@@ -35,7 +34,6 @@ function CabinTable() {
   if(isLoading){
     return <Spinner/>;
   }
-  console.log(cabins,error);
   return <Table role="table">
     <TableHeader role="row">
       <div></div>
